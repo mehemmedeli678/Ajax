@@ -1,0 +1,137 @@
+﻿@model ModelWidthProduct
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to Keko Murad's center</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <label>Marka</label>
+        <select id="Marka" class="form-control">
+            <option value="0">Select Marka...</option>
+
+            @foreach (var item in Model.Marka)
+            {
+                <option value="@item.ID">@item.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-lg-6">
+        <label>Model</label>
+        <select id="Model" class="form-control">
+            <option value="value">Select Model...</option>
+        </select>
+    </div>
+</div>
+
+    <div id="product-list">
+        <div class="row">
+            @foreach (var item in Model.products)
+            {
+                <div id="mycar" class="col-lg-3 my-4">
+                    <img class="img-fluid" style="object-fit:cover;height:180px" src="@item.PhotoUrl" alt="Alternate Text" />
+                    <h2>@item.Model.Name</h2>
+                    <p>@item.Description</p>
+                    <b>@item.Price ₼</b>
+                </div>
+            }
+        </div>
+        <div class="text-center">
+            <button id="btnload" class="btn btn-warning">More</button>
+        </div>
+</div>
+
+
+@section scripts{
+    <script>
+
+        $("#Marka").on("change", function () {
+            const markaId = $(this).val();
+            if (markaId != 0) {
+                $.ajax({
+                    url: "/home/FindModel",
+                    type: "Json",
+                    data: { markaId },
+                    success: function (res) {
+                        $("#Model").html(`
+                    <option value="0">Select Model...</option>
+                        `)
+                        res.forEach(md => {
+                            $("#Model").append(`
+                    <option value="value">${md.name}</option>
+                            `)
+                        })
+                    }
+                })
+            } else {
+                $("#Model").html(`
+                    <option value="0">Select model...</option>
+                `)
+            }
+
+        })
+        let skipProduct = 4;
+
+
+            var sctop = $(this).scrollTop();
+            var plh = $("#product-list").height();
+            console.log(plh + "," + sctop + "," + window.innerHeight);
+
+            $(window).scroll(function () {
+                    if ($(window).scrollTop() + $(window).height() == $(document).height()) {
+
+                    $.ajax({
+                    url: "Home/ProductFilter",
+                    type: "Json",
+                    data: { skip: skipProduct },
+                    success: function (res) {
+                        res.forEach(pro => {
+                            $("#product-list .row").append(`
+                    <div class="col-lg-3 my-4">
+                    <img class="img-fluid" style="object-fit:cover;height:180px" src="${pro.photoUrl}" alt="Alternate Text" />
+                    <h2>${pro.name}</h2>
+                    <p>${pro.description}</p>
+                    <b class="text-warning">${pro.price} ₼</b>
+                </div>
+                         `)
+                        })
+                    }
+                })
+                 skipProduct += 4;
+            if (skipProduct >=@Model.maxPro) {
+                $("#btnload").remove();
+            }
+            }
+
+        })
+
+
+        $("#btnload").click(function () {
+            $.ajax({
+                url: "Home/ProductFilter",
+                type: "Json",
+                data: { skip: skipProduct },
+                success: function (res) {
+                    res.forEach(pro => {
+                        $("#product-list .row").append(`
+                    <div class="col-lg-3 my-4">
+                    <img class="img-fluid" style="object-fit:cover;height:180px" src="${pro.photoUrl}" alt="Alternate Text" />
+                    <h2>${pro.name}</h2>
+                    <p>${pro.description}</p>
+                    <b class="text-warning">${pro.price} ₼</b>
+                </div>
+                         `)
+                    })
+                }
+            })
+            skipProduct += 4;
+            if (skipProduct >=@Model.maxPro) {
+                $("#btnload").remove();
+            }
+        })
+
+    </script>
+ }
